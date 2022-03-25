@@ -1,3 +1,4 @@
+const { uuid } = require('uuidv4');
 const bcrypt = require("bcrypt");
 const helper = require("../helper/index");
 const jwt = require("jsonwebtoken");
@@ -521,15 +522,15 @@ module.exports = {
                     const salt = bcrypt.genSaltSync(10);
                     const encryptPassword = bcrypt.hashSync(user_password, salt);
                     const setData = {
+                        user_id: uuid(),
                         user_email: user_email,
-                        user_first_name: user_first_name,
-                        user_last_name: user_last_name,
+                        user_name: user_first_name + ' ' + user_last_name,
                         user_password: encryptPassword,
                         user_phone: user_phone,
                         user_picture: 'blank.jpg',
                         user_pin: '',
                         user_role: 2,
-                        user_status: 0,
+                        user_status: 1,
                         user_created_at: new Date()
                     }
                     const result = await postUser(setData);
@@ -547,89 +548,96 @@ module.exports = {
             return helper.response(response, 400, "Bad Request");
         }
     },
-    activationEmail: async (request, response) => {
-        try {
-            const { user_email } = request.body;
-            const keys = Math.round(Math.random() * 100000);
-            const checkDataUser = await checkUser(user_email);
-            if (checkDataUser.length >= 1) {
-                const data = {
-                    user_key: keys,
-                    user_updated_at: new Date()
-                }
-                let email_body = `
-                <div>
-                    <h2>Hello Wall-E Friends</h2>
-                    <a href="${process.env.URL_FRONT}activate?keys=${keys}">
-                        Click Here To Activate Your Account
-                    </a>
-                </div>
-                `
-                await updating(data, user_email)
-                let transporter = nodemailer.createTransport({
-                    host: "smtp.gmail.com",
-                    port: 465,
-                    secure: true,
-                    auth: {
-                        user: process.env.USER_EMAIL,
-                        pass: process.env.PASS_EMAIL,
-                    },
-                });
 
-                let info = await transporter.sendMail({
-                    from: `"PT Wall-E 👻" <${process.env.USER_EMAIL}>`,
-                    to: user_email,
-                    subject: "Activation Email ✔",
-                    html: email_body,
-                });
-                const newResult = { message_sent: info.messageId }
-                return helper.response(response, 200, 'Email has been sent !', newResult)
-            } else {
-                return helper.response(response, 400, 'Email is not registered !')
-            }
-        } catch (error) {
-            return helper.response(response, 400, 'Bad Request', error)
-        }
-    },
-    activationUser: async (request, response) => {
-        try {
-            const { keys } = request.query;
-            const checkDataKey = await checkKey(keys);
-            if (
-                request.query.keys === undefined ||
-                request.query.keys === null ||
-                request.query.keys === ""
-            ) {
-                return helper.response(response, 400, "Invalid Key");
-            }
-            if (checkDataKey.length > 0) {
-                const email = checkDataKey[0].user_email
-                const setData = {
-                    user_key: '',
-                    user_status: 1,
-                    user_updated_at: new Date(),
-                };
-                const difference =
-                    setData.user_updated_at - checkDataKey[0].user_updated_at
-                const minutesDifference = Math.floor(difference / 1000 / 60)
-                if (minutesDifference > 15) {
-                    const data = {
-                        user_key: "",
-                        user_updated_at: new Date(),
-                    };
-                    await updating(data, email);
-                    return helper.response(response, 400, "Key has expired")
-                } else {
-                    const result = await updating(setData, email);
-                    return helper.response(response, 200, "Success Activate Account", result);
-                }
-            } else {
-                return helper.response(response, 400, `Invalid key`);
-            }
-        } catch (error) {
-            return helper.response(response, 400, "Bad Request", error)
-        }
-    },
+    // ----- send email aktivasi -----
+
+    // activationEmail: async (request, response) => {
+    //     try {
+    //         const { user_email } = request.body;
+    //         const keys = Math.round(Math.random() * 100000);
+    //         const checkDataUser = await checkUser(user_email);
+    //         if (checkDataUser.length >= 1) {
+    //             const data = {
+    //                 user_key: keys,
+    //                 user_updated_at: new Date()
+    //             }
+    //             let email_body = `
+    //             <div>
+    //                 <h2>Hello Wall-E Friends</h2>
+    //                 <a href="${process.env.URL_FRONT}activate?keys=${keys}">
+    //                     Click Here To Activate Your Account
+    //                 </a>
+    //             </div>
+    //             `
+    //             await updating(data, user_email)
+    //             let transporter = nodemailer.createTransport({
+    //                 host: "smtp.gmail.com",
+    //                 port: 465,
+    //                 secure: true,
+    //                 auth: {
+    //                     user: process.env.USER_EMAIL,
+    //                     pass: process.env.PASS_EMAIL,
+    //                 },
+    //             });
+
+    //             let info = await transporter.sendMail({
+    //                 from: `"PT Wall-E 👻" <${process.env.USER_EMAIL}>`,
+    //                 to: user_email,
+    //                 subject: "Activation Email ✔",
+    //                 html: email_body,
+    //             });
+    //             const newResult = { message_sent: info.messageId }
+    //             return helper.response(response, 200, 'Email has been sent !', newResult)
+    //         } else {
+    //             return helper.response(response, 400, 'Email is not registered !')
+    //         }
+    //     } catch (error) {
+    //         return helper.response(response, 400, 'Bad Request', error)
+    //     }
+    // },
+
+    // ----- get kode verifikasi aktivasi -----
+
+    // activationUser: async (request, response) => {
+    //     try {
+    //         const { keys } = request.query;
+    //         const checkDataKey = await checkKey(keys);
+    //         if (
+    //             request.query.keys === undefined ||
+    //             request.query.keys === null ||
+    //             request.query.keys === ""
+    //         ) {
+    //             return helper.response(response, 400, "Invalid Key");
+    //         }
+    //         if (checkDataKey.length > 0) {
+    //             const email = checkDataKey[0].user_email
+    //             const setData = {
+    //                 user_key: '',
+    //                 user_status: 1,
+    //                 user_updated_at: new Date(),
+    //             };
+    //             const difference =
+    //                 setData.user_updated_at - checkDataKey[0].user_updated_at
+    //             const minutesDifference = Math.floor(difference / 1000 / 60)
+    //             if (minutesDifference > 15) {
+    //                 const data = {
+    //                     user_key: "",
+    //                     user_updated_at: new Date(),
+    //                 };
+    //                 await updating(data, email);
+    //                 return helper.response(response, 400, "Key has expired")
+    //             } else {
+    //                 const result = await updating(setData, email);
+    //                 return helper.response(response, 200, "Success Activate Account", result);
+    //             }
+    //         } else {
+    //             return helper.response(response, 400, `Invalid key`);
+    //         }
+    //     } catch (error) {
+    //         return helper.response(response, 400, "Bad Request", error)
+    //     }
+    // },
+
     loginUser: async (request, response) => {
         if (
             request.body.user_email === undefined ||
@@ -656,17 +664,13 @@ module.exports = {
                     const {
                         user_id,
                         user_email,
-                        user_first_name,
-                        user_last_name,
-                        user_phone,
-                        user_picture,
                         user_pin,
-                        user_role,
                         user_status,
                     } = checkDataUser[0];
                     let payload = {
                         user_id,
-                        user_pin
+                        user_pin,
+                        user_email
                     };
                     if (user_status == 0) {
                         return helper.response(
@@ -689,123 +693,125 @@ module.exports = {
             return helper.response(response, 400, "Bad Request");
         }
     },
-    forgotPassword: async (request, response) => {
-        try {
-            const { user_email } = request.body
-            const keys = Math.round(Math.random() * 100000)
-            const checkDataUser = await checkUser(user_email)
-            if (checkDataUser.length >= 1) {
-                const data = {
-                    user_key: keys,
-                    user_updated_at: new Date(),
-                };
-                await updating(data, user_email);
 
-                let email_body = `
-                <div>
-                    <h2>Hello Wall-E Friends</h2>
-                    <a href="${process.env.URL_FRONT}setpassword?keys=${keys}">Click Here to change your password
-                    </a>
-                </div>
-                `
-                let transporter = nodemailer.createTransport({
-                    host: "smtp.gmail.com",
-                    port: 465,
-                    secure: true,
-                    auth: {
-                        user: process.env.USER_EMAIL,
-                        pass: process.env.PASS_EMAIL,
-                    },
-                });
+    // ----change password----
+    // forgotPassword: async (request, response) => {
+    //     try {
+    //         const { user_email } = request.body
+    //         const keys = Math.round(Math.random() * 100000)
+    //         const checkDataUser = await checkUser(user_email)
+    //         if (checkDataUser.length >= 1) {
+    //             const data = {
+    //                 user_key: keys,
+    //                 user_updated_at: new Date(),
+    //             };
+    //             await updating(data, user_email);
 
-                let info = await transporter.sendMail({
-                    from: `"PT Wall-E" <${process.env.USER_EMAIL}>`,
-                    to: user_email,
-                    subject: "Change Password Confimation",
-                    html: email_body,
-                });
+    //             let email_body = `
+    //             <div>
+    //                 <h2>Hello Wall-E Friends</h2>
+    //                 <a href="${process.env.URL_FRONT}setpassword?keys=${keys}">Click Here to change your password
+    //                 </a>
+    //             </div>
+    //             `
+    //             let transporter = nodemailer.createTransport({
+    //                 host: "smtp.gmail.com",
+    //                 port: 465,
+    //                 secure: true,
+    //                 auth: {
+    //                     user: process.env.USER_EMAIL,
+    //                     pass: process.env.PASS_EMAIL,
+    //                 },
+    //             });
 
-                console.log("Message sent: %s", info.messageId);
-                return helper.response(response, 200, "Email has been sent !")
-            } else {
-                return helper.response(response, 400, 'Email is not registered !')
-            }
-        } catch (error) {
-            return helper.response(response, 400, "Bad Request", error)
-        }
-    },
-    changePassword: async (request, response) => {
-        try {
-            const { keys } = request.query
-            const { user_password } = request.body
-            const checkDataUser = await checkKey(keys)
-            if (
-                request.query.keys === undefined ||
-                request.query.keys === null ||
-                request.query.keys === ""
-            ) {
-                return helper.response(response, 400, "Invalid Key");
-            }
-            if (checkDataUser.length > 0) {
-                const email = checkDataUser[0].user_email
-                const setData = {
-                    user_key: keys,
-                    user_password,
-                    user_updated_at: new Date(),
-                }
-                const difference =
-                    setData.user_updated_at - checkDataUser[0].user_updated_at
-                const minutesDifference = Math.floor(difference / 1000 / 60)
-                if (minutesDifference > 5) {
-                    const data = {
-                        user_key: "",
-                        user_updated_at: new Date(),
-                    };
-                    await updating(data, email);
-                    return helper.response(response, 400, "Key has expired")
-                } else if (
-                    request.body.user_password === undefined ||
-                    request.body.user_password === null ||
-                    request.body.user_password === ""
-                ) {
-                    return helper.response(response, 400, "Password must be filled !")
-                } else if (
-                    request.body.confirm_password === undefined ||
-                    request.body.confirm_password === null ||
-                    request.body.confirm_password === ""
-                ) {
-                    return helper.response(
-                        response,
-                        400,
-                        "Confirm Password must be filled !"
-                    )
-                } else if (
-                    !request.body.user_password.match(/[A-Z]/g) ||
-                    !request.body.user_password.match(/[0-9]/g) ||
-                    request.body.user_password.length < 8 ||
-                    request.body.user_password.length > 16
-                ) {
-                    return helper.response(response, 400, "Password Must include 8-16 characters, at least 1 digit number and 1 Uppercase")
-                } else if (request.body.confirm_password !== request.body.user_password) {
-                    return helper.response(response, 400, "Password didn't match");
-                } else {
-                    const salt = bcrypt.genSaltSync(10);
-                    const encryptPassword = bcrypt.hashSync(user_password, salt)
-                    setData.user_password = encryptPassword
-                    setData.user_key = ""
-                }
-                const result = await updating(setData, email)
-                return helper.response(
-                    response,
-                    200,
-                    "Success Password Updated",
-                    result
-                );
-            } else {
-                return helper.response(response, 404, `Invalid key`);
-            }
-        } catch (error) {
-            return helper.response(response, 404, "Bad Request", error);
-        }
-    },
+    //             let info = await transporter.sendMail({
+    //                 from: `"PT Wall-E" <${process.env.USER_EMAIL}>`,
+    //                 to: user_email,
+    //                 subject: "Change Password Confimation",
+    //                 html: email_body,
+    //             });
+
+    //             console.log("Message sent: %s", info.messageId);
+    //             return helper.response(response, 200, "Email has been sent !")
+    //         } else {
+    //             return helper.response(response, 400, 'Email is not registered !')
+    //         }
+    //     } catch (error) {
+    //         return helper.response(response, 400, "Bad Request", error)
+    //     }
+    // },
+    // changePassword: async (request, response) => {
+    //     try {
+    //         const { keys } = request.query
+    //         const { user_password } = request.body
+    //         const checkDataUser = await checkKey(keys)
+    //         if (
+    //             request.query.keys === undefined ||
+    //             request.query.keys === null ||
+    //             request.query.keys === ""
+    //         ) {
+    //             return helper.response(response, 400, "Invalid Key");
+    //         }
+    //         if (checkDataUser.length > 0) {
+    //             const email = checkDataUser[0].user_email
+    //             const setData = {
+    //                 user_key: keys,
+    //                 user_password,
+    //                 user_updated_at: new Date(),
+    //             }
+    //             const difference =
+    //                 setData.user_updated_at - checkDataUser[0].user_updated_at
+    //             const minutesDifference = Math.floor(difference / 1000 / 60)
+    //             if (minutesDifference > 5) {
+    //                 const data = {
+    //                     user_key: "",
+    //                     user_updated_at: new Date(),
+    //                 };
+    //                 await updating(data, email);
+    //                 return helper.response(response, 400, "Key has expired")
+    //             } else if (
+    //                 request.body.user_password === undefined ||
+    //                 request.body.user_password === null ||
+    //                 request.body.user_password === ""
+    //             ) {
+    //                 return helper.response(response, 400, "Password must be filled !")
+    //             } else if (
+    //                 request.body.confirm_password === undefined ||
+    //                 request.body.confirm_password === null ||
+    //                 request.body.confirm_password === ""
+    //             ) {
+    //                 return helper.response(
+    //                     response,
+    //                     400,
+    //                     "Confirm Password must be filled !"
+    //                 )
+    //             } else if (
+    //                 !request.body.user_password.match(/[A-Z]/g) ||
+    //                 !request.body.user_password.match(/[0-9]/g) ||
+    //                 request.body.user_password.length < 8 ||
+    //                 request.body.user_password.length > 16
+    //             ) {
+    //                 return helper.response(response, 400, "Password Must include 8-16 characters, at least 1 digit number and 1 Uppercase")
+    //             } else if (request.body.confirm_password !== request.body.user_password) {
+    //                 return helper.response(response, 400, "Password didn't match");
+    //             } else {
+    //                 const salt = bcrypt.genSaltSync(10);
+    //                 const encryptPassword = bcrypt.hashSync(user_password, salt)
+    //                 setData.user_password = encryptPassword
+    //                 setData.user_key = ""
+    //             }
+    //             const result = await updating(setData, email)
+    //             return helper.response(
+    //                 response,
+    //                 200,
+    //                 "Success Password Updated",
+    //                 result
+    //             );
+    //         } else {
+    //             return helper.response(response, 404, `Invalid key`);
+    //         }
+    //     } catch (error) {
+    //         return helper.response(response, 404, "Bad Request", error);
+    //     }
+    // },
 }

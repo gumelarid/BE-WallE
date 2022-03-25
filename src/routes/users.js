@@ -14,10 +14,10 @@ const {
     deactivateUser,
     loginUser,
     registerUser,
-    activationEmail,
-    activationUser,
-    forgotPassword,
-    changePassword
+    // activationEmail,
+    // activationUser,
+    // forgotPassword,
+    // changePassword
 
 } = require("../controller/users");
 const { authorization } = require("../middleware/auth");
@@ -40,10 +40,10 @@ router.patch("/deactivate/:user_id", authorization, deactivateUser);
 router.post("/login", loginUser);
 router.post("/register", registerUser);
 
-router.post('/email', activationEmail)
-router.patch('/activate', activationUser)
+// router.post('/email', activationEmail)
+// router.patch('/activate', activationUser)
 
-router.post('/forgot', forgotPassword)
-router.patch('/change', changePassword)
+// router.post('/forgot', forgotPassword)
+// router.patch('/change', changePassword)
 
 module.exports = router;

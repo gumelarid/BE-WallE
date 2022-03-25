@@ -148,13 +148,10 @@ module.exports = {
     postUser: (setData) => {
         return new Promise((resolve, reject) => {
             connection.query("INSERT INTO user SET ?", setData, (error, result) => {
+                console.log(error);
                 if (!error) {
-                    const newResult = {
-                        id: result.insertId,
-                        ...setData,
-                    };
-                    delete newResult.user_password;
-                    resolve(newResult);
+                    delete setData.user_password;
+                    resolve(setData);
                 } else {
                     reject(new Error(error));
                 }
