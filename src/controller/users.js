@@ -9,7 +9,6 @@ const {
     getAllUser,
     getUserByName,
     getUserCount,
-    getUserCountByName,
     getUserById,
     getPasswordById,
     checkPin,
@@ -50,9 +49,8 @@ module.exports = {
     getAllUser: async (request, response) => {
         try {
             let { sort, page, limit } = request.query;
-
             if (sort === undefined || sort === null || sort === "") {
-                sort = `user_id`;
+                sort = `user_name`;
             }
             if (page === undefined || page === null || page === "") {
                 page = parseInt(1);
@@ -87,45 +85,16 @@ module.exports = {
     },
     getUserByName: async (request, response) => {
         try {
-            let { search, page, limit } = request.query;
-
-            if (search === undefined || search === null || search === "") {
-                search = "%";
-            }
-            if (page === undefined || page === null || page === "") {
-                page = parseInt(1);
-            } else {
-                page = parseInt(page);
-            }
-            if (limit === undefined || limit === null || limit === "") {
-                limit = parseInt(9);
-            } else {
-                limit = parseInt(limit);
-            }
-            let totalData = await getUserCountByName(search);
-            let totalPage = Math.ceil(totalData / limit);
-            let limits = page * limit;
-            let offset = page * limit - limit;
-            let prevLink = getPrevLink(page, request.query);
-            let nextLink = getNextLink(page, totalPage, request.query);
-
-            const pageInfo = {
-                page,
-                totalPage,
-                limit,
-                totalData,
-                prevLink: prevLink && `http://127.0.0.1:3001/users/user/name?${prevLink}`,
-                nextLink: nextLink && `http://127.0.0.1:3001/users/user/name?${nextLink}`,
-            };
-            const result = await getUserByName(search, limit, offset);
-            return helper.response(response, 200, "Success Get All User", result, pageInfo);
+            let { search } = request.query
+            const result = await getUserByName(search);
+            return helper.response(response, 200, "Success Get All User", result);
         } catch (error) {
             return helper.response(response, 400, "Bad Request", error);
         }
     },
     getUserById: async (request, response) => {
         try {
-            const { id } = request.params
+            const id = request.token.user_id
             const result = await getUserById(id)
             if (result.length > 0) {
                 return helper.response(response, 200, "Success Get User By Id", result);
@@ -138,7 +107,7 @@ module.exports = {
     },
     patchPassword: async (request, response) => {
         try {
-            const { user_id } = request.params;
+            const { user_id } = request.token;
             const { old_password, user_password } = request.body
             if (
                 request.body.old_password === undefined ||
@@ -185,7 +154,6 @@ module.exports = {
                             response,
                             200,
                             "Success Password Updated",
-                            result
                         );
                     } else {
                         return helper.response(response, 400, "Wrong Password !");
@@ -202,7 +170,7 @@ module.exports = {
     },
     patchProfile: async (request, response) => {
         try {
-            const { user_id } = request.params;
+            const user_id = request.token.user_id;
             const { user_first_name, user_last_name, user_phone } = request.body
             const phoneInDatabase = await isPhone_OtherUserExist(user_id, user_phone)
             if (
@@ -236,16 +204,16 @@ module.exports = {
                 const checkUser = await getUserById(user_id)
                 if (checkUser.length > 0) {
                     const setDataUser = {
-                        user_first_name: user_first_name,
-                        user_last_name: user_last_name,
+                        user_name: user_first_name + ' ' + user_last_name,
                         user_phone: user_phone,
                     }
+
+
                     const result = await patchUser(setDataUser, user_id);
                     return helper.response(
                         response,
                         200,
-                        "Success Profile Updated",
-                        result
+                        "Success Profile Updated"
                     );
 
                 } else {
@@ -258,7 +226,7 @@ module.exports = {
     },
     patchImage: async (request, response) => {
         try {
-            const { user_id } = request.params;
+            const { user_id } = request.token;
             const checkUser = await getUserById(user_id)
             if (checkUser.length > 0) {
                 const setDataUser = {
@@ -277,7 +245,6 @@ module.exports = {
                         response,
                         200,
                         "Success Image Updated",
-                        result
                     );
                 } else if (request.file === undefined) {
                     setDataUser.user_picture = checkUser[0].user_picture
@@ -286,7 +253,6 @@ module.exports = {
                         response,
                         200,
                         "Success Image Updated",
-                        result
                     );
                 } else {
                     setDataUser.user_picture = request.file.filename
@@ -300,7 +266,6 @@ module.exports = {
                         response,
                         200,
                         "Success Image Updated",
-                        result
                     );
                 }
             } else {
@@ -312,7 +277,7 @@ module.exports = {
     },
     deleteImage: async (request, response) => {
         try {
-            const { user_id } = request.params;
+            const { user_id } = request.token;
             const checkUser = await getUserById(user_id)
             if (checkUser.length > 0) {
                 const setDataUser = {
@@ -325,8 +290,7 @@ module.exports = {
                     return helper.response(
                         response,
                         200,
-                        "Image Deleted Successfully",
-                        result
+                        "Image Deleted Successfully"
                     );
                 } else {
                     fs.unlink(`./uploads/${checkUser[0].user_picture}`, (error) => {
@@ -338,8 +302,7 @@ module.exports = {
                     return helper.response(
                         response,
                         200,
-                        "Image Deleted Successfully",
-                        result
+                        "Image Deleted Successfully"
                     );
                 }
             } else {
@@ -351,12 +314,11 @@ module.exports = {
     },
     isPinExist: async (request, response) => {
         try {
-            const { user_id } = request.params
+            const { user_id } = request.token
             const checkUser = await getUserById(user_id)
-            const result = await checkPin(user_id)
             if (checkUser.length > 0) {
-                if (result[0].user_pin.length > 0) {
-                    return helper.response(response, 200, "Success get pin", result);
+                if (checkUser[0].user_pin.length > 0) {
+                    return helper.response(response, 200, "Success get pin", checkUser);
                 } else {
                     return helper.response(response, 404, "Pin is empty");
                 }
@@ -369,21 +331,20 @@ module.exports = {
     },
     checkPin: async (request, response) => {
         try {
-            const { user_id } = request.params
+            const { user_id } = request.token
             const { user_pin } = request.body
             if (
-                request.body.user_pin === undefined ||
-                request.body.user_pin === null ||
-                request.body.user_pin === ""
+                user_pin === undefined ||
+                user_pin === null ||
+                user_pin === ""
             ) {
                 return helper.response(response, 404, "Pin must be filled");
             }
             const checkUser = await getUserById(user_id)
-            const result = await checkPin(user_id)
             if (checkUser.length > 0) {
-                if (result[0].user_pin.length > 0) {
-                    if (user_pin == result[0].user_pin) {
-                        return helper.response(response, 200, "Pin Match", result);
+                if (checkUser[0].user_pin.length > 0) {
+                    if (user_pin == checkUser[0].user_pin) {
+                        return helper.response(response, 200, "Pin Match", checkUser);
                     } else {
                         return helper.response(response, 404, "Wrong Pin");
                     }
@@ -399,7 +360,7 @@ module.exports = {
     },
     patchPin: async (request, response) => {
         try {
-            const { user_id } = request.params;
+            const { user_id } = request.token;
             const { user_pin } = request.body
             if (
                 request.body.user_pin === undefined ||
@@ -418,7 +379,7 @@ module.exports = {
                     response,
                     200,
                     "Success Pin Updated",
-                    result
+
                 );
 
             } else {
@@ -669,7 +630,6 @@ module.exports = {
                     } = checkDataUser[0];
                     let payload = {
                         user_id,
-                        user_pin,
                         user_email
                     };
                     if (user_status == 0) {

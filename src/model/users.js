@@ -3,14 +3,14 @@ const connection = require("../config/mysql");
 module.exports = {
     getAllUser: (sort, limit, offset) => {
         return new Promise((resolve, reject) => {
-            connection.query(`SELECT * FROM user WHERE user_status = 1 ORDER BY ${sort} LIMIT ? OFFSET ?`, [limit, offset], (error, result) => {
+            connection.query(`SELECT * FROM user WHERE user_status = 1 ORDER BY ? LIMIT ? OFFSET ?`, [sort, limit, offset], (error, result) => {
                 !error ? resolve(result) : reject(new Error(error));
             });
         });
     },
-    getUserByName: (search, limit, offset) => {
+    getUserByName: (search) => {
         return new Promise((resolve, reject) => {
-            connection.query(`SELECT * FROM user WHERE user_first_name LIKE '%${search}%' OR user_last_name LIKE '%${search}%' LIMIT ? OFFSET ?`, [limit, offset], (error, result) => {
+            connection.query(`SELECT * FROM user WHERE user_name LIKE '%${search}%'`, (error, result) => {
                 !error ? resolve(result) : reject(new Error(error));
             });
         });
@@ -25,21 +25,12 @@ module.exports = {
             );
         });
     },
-    getUserCountByName: (search) => {
-        return new Promise((resolve, reject) => {
-            connection.query(
-                `SELECT COUNT(*) as total FROM user WHERE user_first_name LIKE '%${search}%' OR user_last_name LIKE '%${search}%'`,
-                (error, result) => {
-                    !error ? resolve(result[0].total) : reject(new Error(error));
-                }
-            );
-        });
-    },
+
     getUserById: (id) => {
         return new Promise((resolve, reject) => {
             connection.query(
                 "SELECT * FROM user WHERE user_id = ?",
-                id,
+                [id],
                 (error, result) => {
                     if (!error) {
                         result.map(value => {
@@ -100,11 +91,7 @@ module.exports = {
             connection.query(
                 "UPDATE user SET ? WHERE user_id = ?", [setData, id], (error, result) => {
                     if (!error) {
-                        const newResult = {
-                            user_id: id,
-                            ...setData,
-                        }
-                        resolve(newResult);
+                        resolve(result);
                     } else {
                         reject(new Error(error));
                     }
