@@ -25,7 +25,7 @@ const uploadImage = require("../middleware/multer");
 
 router.get("/user", authorization, getAllUser);
 router.get("/user/name", authorization, getUserByName);
-router.get('/', authorization, getUserById)
+router.get("/:id", authorization, getUserById)
 router.patch("/patch/password", authorization, patchPassword);
 router.patch("/patch/profile", authorization, patchProfile);
 router.patch("/patch/image", authorization, uploadImage, patchImage);

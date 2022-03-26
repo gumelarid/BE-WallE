@@ -1,4 +1,5 @@
 const helper = require('../helper/index');
+const { uuid } = require('uuidv4');
 const { getUserByIdV2, patchUser } = require('../model/users')
 const { postTransfer, getTransferByUser, getWeekBalance, getDailyBalance, getTransferCount } = require('../model/m_transfer')
 const { postNotification } = require('../model/m_notification')
@@ -36,14 +37,14 @@ module.exports = {
                     return helper.response(response, 403, `Sorry, your account balance is not sufficient for this transaction. Your account balance is Rp ${formatBalance}`)
 
                 } else {
-                    const newTransId = new Date().getTime()
                     let setData = {
-                        transfer_id: newTransId,
+                        transfer_id: uuid(),
                         user_id_a,
                         user_id_b,
                         user_role: 1,
                         transfer_note,
                         transfer_amount,
+                        transfer_created_at: new Date(),
                     }
                     const post1 = await postTransfer(setData)
                     const calBalanceA = parseInt(checkUserA[0].user_balance) - parseInt(transfer_amount)
@@ -55,30 +56,33 @@ module.exports = {
 
                     let setNewData = {
                         ...setData,
+                        transfer_id: uuid(),
                         user_id_a: user_id_b,
                         user_id_b: user_id_a,
                         user_role: 2
                     }
+
                     const post2 = await postTransfer(setNewData)
                     const calBalanceB = parseInt(checkUserB[0].user_balance) + parseInt(transfer_amount)
                     setSaldo.user_balance = calBalanceB
-                    const UpdateUserB_Balance = await patchUser(setSaldo, user_id_b)
 
-                    const fullName_B = checkUserB[0].user_first_name + ' ' + checkUserB[0].user_last_name
-                    const setNotifData_A = {
-                        user_id: user_id_a ,
-                        notif_subject: 'Transfer to ' + fullName_B + ' was successful',
-                        transfer_amount,
-                    }
-                    const fullName_A = checkUserA[0].user_first_name + ' ' + checkUserA[0].user_last_name
-                    const setNotifData_B = {
-                        user_id: user_id_b,
-                        notif_subject: 'Transfered from ' + fullName_A,
-                        transfer_amount,
-                    }
+                    await patchUser(setSaldo, user_id_b)
 
-                    const postNotif_userA = await postNotification(setNotifData_A)
-                    const postNotif_userB = await postNotification(setNotifData_B)
+                    // const fullName_B = checkUserB[0].user_first_name + ' ' + checkUserB[0].user_last_name
+                    // const setNotifData_A = {
+                    //     user_id: user_id_a ,
+                    //     notif_subject: 'Transfer to ' + fullName_B + ' was successful',
+                    //     transfer_amount,
+                    // }
+                    // const fullName_A = checkUserA[0].user_first_name + ' ' + checkUserA[0].user_last_name
+                    // const setNotifData_B = {
+                    //     user_id: user_id_b,
+                    //     notif_subject: 'Transfered from ' + fullName_A,
+                    //     transfer_amount,
+                    // }
+
+                    // const postNotif_userA = await postNotification(setNotifData_A)
+                    // const postNotif_userB = await postNotification(setNotifData_B)
 
                     const newResult = { post1, post2 }
                     const formatBalanceA = helper.formatN(calBalanceA)
@@ -119,10 +123,9 @@ module.exports = {
 
             } else {
                 const result = await getTransferByUser(id, limit, offset)
-
                 for (i = 0; i < result.length; i++) {
                     const getName = await getUserByIdV2(result[i].user_id_b)
-                    result[i].user_name_b = getName[0].user_first_name + ' ' + getName[0].user_last_name
+                    result[i].user_name_b = getName[0].user_name
                     result[i].user_picture_b = getName[0].user_picture
                 }
 

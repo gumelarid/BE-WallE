@@ -94,7 +94,7 @@ module.exports = {
     },
     getUserById: async (request, response) => {
         try {
-            const id = request.token.user_id
+            const id = request.params.id
             const result = await getUserById(id)
             if (result.length > 0) {
                 return helper.response(response, 200, "Success Get User By Id", result);
