@@ -492,6 +492,7 @@ module.exports = {
                         user_pin: '',
                         user_role: 2,
                         user_status: 1,
+                        user_balance: 0,
                         user_created_at: new Date()
                     }
                     const result = await postUser(setData);

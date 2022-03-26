@@ -49,11 +49,7 @@ module.exports = {
     return new Promise((resolve, reject) => {
       db.query("INSERT INTO history SET ?", setData, (error, result) => {
         if (!error) {
-          const newResult = {
-            id: result.insertId,
-            ...setData,
-          };
-          resolve(newResult);
+          resolve(setData);
         } else {
           reject(new Error(error))
         }
