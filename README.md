@@ -49,74 +49,56 @@ PASS=Your Password
 - `/users/user?sort=value&page=value&limit=value`(Get all user)
 - `/users/user/name?search=value&page=value&limit=value`(Get user by name)
 - `/users/:id`(Get user by Id)
-- `/users/pin/exist/:user_id`(Check if pin length > 0 in database)
-- `/users/pin/:user_id`(check if the input pin is the same as the pin in database)
+- `/users/pin/exist`(Check if pin length > 0 in database)
+- `/users/pin`(check if the input pin is the same as the pin in database)
 
-    - `{ "user_pin": "123456" }`
+  - `{ "user_pin": "123456" }`
 
 - `/transfer/:id`(Get user transfer by id)
 - `/transfer/balance-statistic/:id`(Get balance statistic)
-- `/notification/:id?limit=5`(Get user notification)
-- `/notification/count-unread/:id`(Get count unread notification)
 
 **2. POST**
 
 - `/users/login`(Post login user)
 
-    - `{ "user_email": "romulan@gmail.com", "user_password": "romulans"}`
+  - `{ "user_email": "romulan@gmail.com", "user_password": "romulans"}`
 
 - `/users/register`(Post register user)
 
-    - `{ "user_email": romulan@gmail.com, "user_password": "romulans", "confirm_password": "romulans", "user_first_name": "Marcus", "user_last_name": "Wong", "user_phone": "08111111111"}`
+  - `{ "user_email": romulan@gmail.com, "user_password": "romulans", "confirm_password": "romulans", "user_first_name": "Marcus", "user_last_name": "Wong", "user_phone": "08111111111"}`
 
 - `/users/email`(Post activation via email)
 
-    - `{ "user_email": "romulan@gmail.com" }`
+  - `{ "user_email": "romulan@gmail.com" }`
 
 - `/users/forgot`(Post forgot password via email)
 
-    - `{ "user_email": "romulan@gmail.com" }`
+  - `{ "user_email": "romulan@gmail.com" }`
 
 - `/transfer/`(Post transfer)
 
-    - `{ "user_id_a": "7", "user_id_b": "1", "user_pin": "123456", "transfer_amount": "6000" }`
-
-- `/payment/`(Post payment)
-
-    - `{ "user_id": "1", "history_nominal": "150000" }`
-
-- `/payment/midtrans-notification`(Post notification midtrans)
+  - `{ "user_id_a": "7", "user_id_b": "1", "user_pin": "123456", "transfer_amount": "6000" }`
 
 - `/payment/top-up`(Post manual payment)
 
-    - `{ "user_id": "2", "history_nominal": "300000" }`
+  - `{ "history_nominal": "300000" }`
 
 **3. PATCH**
 
-- `/users/activate?keys=value`(Patch to activate user)
-- `/users/change?keys=value`(Patch to change password)
+- `/users/patch/password`(Patch password)
 
-    - `{ "user_password": "Mamumi12", "confirm_password": "Mamumi12"}`
+  - `{ "old_password": "Mamumi123", "user_password": "Mamumi12", "confirm_password": "Mamumi12"}`
 
-- `/users/patch/password/:user_id`(Patch password)
+- `/users/patch/profile`(Patch name and phone number)
 
-    - `{ "old_password": "Mamumi123", "user_password": "Mamumi12", "confirm_password": "Mamumi12"}`
+  - `{ "user_name": "Wong", "user_phone": "08111111111"}`
 
-- `/users/patch/profile/:user_id`(Patch first name, last name and phone number)
+- `/users/patch/image`(Patch image)
 
-    - `{ "user_first_name": "Marcus", "user_last_name": "Wong", "user_phone": "08111111111"}`
+  - `{ "user_picture": "carl.png" }`
 
-- `/users/patch/image/:user_id`(Patch image)
+- `/users/delete/image`(Delete image)
 
-    - `{ "user_picture": "carl.png" }`
+- `/users/patch/pin`(Patch pin)
 
-- `/users/delete/image/:user_id`(Delete image)
-
-- `/users/patch/pin/:user_id`(Patch pin)
-
-    - `{ "user_pin": "123456" }`
-
-## Postman link
-
-Link: https://documenter.getpostman.com/view/12323107/TVRhcUsT
-
+  - `{ "user_pin": "123456" }`

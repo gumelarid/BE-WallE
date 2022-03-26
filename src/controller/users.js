@@ -171,20 +171,14 @@ module.exports = {
     patchProfile: async (request, response) => {
         try {
             const user_id = request.token.user_id;
-            const { user_first_name, user_last_name, user_phone } = request.body
+            const { user_name, user_phone } = request.body
             const phoneInDatabase = await isPhone_OtherUserExist(user_id, user_phone)
             if (
-                request.body.user_first_name === undefined ||
-                request.body.user_first_name === null ||
-                request.body.user_first_name === ""
+                request.body.user_name === undefined ||
+                request.body.user_name === null ||
+                request.body.user_name === ""
             ) {
-                return helper.response(response, 404, "First name must be filled");
-            } else if (
-                request.body.user_last_name === undefined ||
-                request.body.user_last_name === null ||
-                request.body.user_last_name === ""
-            ) {
-                return helper.response(response, 404, "Last name must be filled");
+                return helper.response(response, 404, " name must be filled");
             } else if (
                 request.body.user_phone === undefined ||
                 request.body.user_phone === null ||
@@ -204,7 +198,7 @@ module.exports = {
                 const checkUser = await getUserById(user_id)
                 if (checkUser.length > 0) {
                     const setDataUser = {
-                        user_name: user_first_name + ' ' + user_last_name,
+                        user_name: user_name,
                         user_phone: user_phone,
                     }
 
@@ -631,6 +625,7 @@ module.exports = {
                     } = checkDataUser[0];
                     let payload = {
                         user_id,
+                        user_pin,
                         user_email
                     };
                     if (user_status == 0) {
