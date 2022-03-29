@@ -105,6 +105,7 @@ module.exports = {
                 "SELECT user_email FROM user WHERE (user_email=?)",
                 email,
                 (error, result) => {
+                    // console.log(error)
                     !error ? resolve(result) : reject(new Error(error));
                 }
             );
@@ -135,6 +136,7 @@ module.exports = {
     postUser: (setData) => {
         return new Promise((resolve, reject) => {
             connection.query("INSERT INTO user SET ?", setData, (error, result) => {
+                console.log(error)
                 if (!error) {
                     delete setData.user_password;
                     resolve(setData);
@@ -150,6 +152,7 @@ module.exports = {
                 "SELECT * FROM user WHERE user_email = ?",
                 email,
                 (error, result) => {
+                    // console.log(error)
                     !error ? resolve(result) : reject(new Error(error))
                 }
             )

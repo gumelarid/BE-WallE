@@ -3,9 +3,6 @@ const { Client } = require('pg');
 const fs = require('fs')
 
 let connection
-const config = {
-    connectionString: 'postgres://hndfwvytitbxwh:e4d9f063b83ae5acb3b98893630196f4d0b119247a75887aac2139c84f7de079@ec2-52-201-124-168.compute-1.amazonaws.com:5432/dd6bv3h3r9dolu?sslmode=require',
-}
 
 if (process.env.DATABASE == "mysql") {
     connection = mysql.createConnection({
@@ -23,7 +20,14 @@ if (process.env.DATABASE == "mysql") {
     })
 } else {
 
-    const connection = new Client(config)
+    connection = new Client({
+        user: "hndfwvytitbxwh",
+        password: "e4d9f063b83ae5acb3b98893630196f4d0b119247a75887aac2139c84f7de079",
+        database: "dd6bv3h3r9dolu",
+        port: 5432,
+        host: "ec2-52-201-124-168.compute-1.amazonaws.com",
+        ssl: { rejectUnauthorized: false }
+    });
 
     connection.connect(err => {
         if (err) {
