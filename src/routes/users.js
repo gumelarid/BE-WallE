@@ -32,7 +32,7 @@ router.patch("/patch/image", authorization, uploadImage, patchImage);
 router.get("/delete/image", authorization, deleteImage);
 
 router.get('/pin/exist', authorization, isPinExist)
-router.get('/pin', authorization, checkPin)
+router.get('/check/pin', authorization, checkPin)
 router.patch("/patch/pin", authorization, patchPin);
 
 router.patch("/deactivate/:user_id", authorization, deactivateUser);

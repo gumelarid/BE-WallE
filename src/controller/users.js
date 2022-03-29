@@ -311,7 +311,7 @@ module.exports = {
             const { user_id } = request.token
             const checkUser = await getUserById(user_id)
             if (checkUser.length > 0) {
-                if (checkUser[0].user_pin.length > 0) {
+                if (checkUser[0].user_pin !== null) {
                     return helper.response(response, 200, "Success get pin", checkUser);
                 } else {
                     return helper.response(response, 404, "Pin is empty");
@@ -335,6 +335,7 @@ module.exports = {
                 return helper.response(response, 404, "Pin must be filled");
             }
             const checkUser = await getUserById(user_id)
+
             if (checkUser.length > 0) {
                 if (checkUser[0].user_pin.length > 0) {
                     if (user_pin == checkUser[0].user_pin) {
@@ -409,7 +410,6 @@ module.exports = {
         try {
             const { user_email, user_password, user_first_name, user_last_name, user_phone } = request.body;
             const userInDatabase = await isUserExist(user_email);
-            console.log(userInDatabase)
             if (userInDatabase.length > 0) {
                 return helper.response(
                     response,
@@ -484,7 +484,7 @@ module.exports = {
                         user_password: encryptPassword,
                         user_phone: user_phone,
                         user_picture: 'blank.jpg',
-                        user_pin: '',
+                        user_pin: null,
                         user_role: 2,
                         user_status: 1,
                         user_balance: 0,

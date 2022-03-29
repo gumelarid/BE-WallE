@@ -46,27 +46,29 @@ module.exports = {
     });
   },
   postTopUp: (setData) => {
+    const { history_id,
+      user_id,
+      history_nominal,
+      history_created_at,
+      history_status } = setData
     return new Promise((resolve, reject) => {
-      db.query("INSERT INTO history SET ?", setData, (error, result) => {
-        if (!error) {
-          resolve(setData);
-        } else {
-          reject(new Error(error))
-        }
-      });
-    });
-  },
-  checkUser: (id) => {
-    return new Promise((resolve, reject) => {
-      db.query("SELECT * FROM user WHERE user_id = ?", id, (error, result) => {
-        !error ? resolve(result) : reject(new Error(error));
-      });
+      db.query("INSERT INTO history(history_id, user_id,history_nominal,history_created_at,history_status) VALUES($1, $2, $3, $4, $5)", [history_id,
+        user_id,
+        history_nominal,
+        history_created_at,
+        history_status], (error, result) => {
+          if (!error) {
+            resolve(setData);
+          } else {
+            reject(new Error(error))
+          }
+        });
     });
   },
   updateBalance: (balance, id) => {
     return new Promise((resolve, reject) => {
       db.query(
-        "UPDATE user SET user_balance = ? WHERE user_id = ?",
+        "UPDATE users SET user_balance = $1 WHERE user_id = $2",
         [balance, id],
         (error, result) => {
           !error ? resolve(result) : reject(new Error(error));

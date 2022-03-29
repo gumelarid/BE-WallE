@@ -6,32 +6,32 @@ const {
   postHistory,
   postTopUp,
   updateBalance,
-  checkUser,
   getHistoryById,
 } = require("../model/payment");
+const { getUserById } = require("../model/users")
 const { getUserByIdV2 } = require('../model/users')
 const { postNotification } = require('../model/m_notification')
 
 module.exports = {
-  postPayment: async (request, response) => {
-    try {
-      const { user_id, history_nominal } = request.body;
-      const setData = {
-        user_id,
-        history_nominal,
-        history_created_at: new Date(),
-        history_status: 2
-      };
-      const topUpHistory = await postHistory(setData);
-      const topUp = await createPayment(
-        topUpHistory.id,
-        topUpHistory.history_nominal
-      );
-      return helper.response(response, 200, "Success Create Payment", topUp);
-    } catch (error) {
-      return helper.response(response, 400, "Bad Request");
-    }
-  },
+  // postPayment: async (request, response) => {
+  //   try {
+  //     const { user_id, history_nominal } = request.body;
+  //     const setData = {
+  //       user_id,
+  //       history_nominal,
+  //       history_created_at: new Date(),
+  //       history_status: 2
+  //     };
+  //     const topUpHistory = await postHistory(setData);
+  //     const topUp = await createPayment(
+  //       topUpHistory.id,
+  //       topUpHistory.history_nominal
+  //     );
+  //     return helper.response(response, 200, "Success Create Payment", topUp);
+  //   } catch (error) {
+  //     return helper.response(response, 400, "Bad Request");
+  //   }
+  // },
   // postMidtransNotif: async (request, response) => {
   //   console.log('MIdtrans Run')
   //   console.log(request.body)
@@ -122,16 +122,13 @@ module.exports = {
         return helper.response(response, 400, "Nominal min 50.000");
       }
 
-      let checkId = await checkUser(user_id);
-
+      let checkId = await getUserById(user_id);
       if (checkId.length > 0) {
 
         let manualTopUp = await postTopUp(setData);
-
         let newBalance =
-          parseInt(manualTopUp.history_nominal) +
+          parseInt(history_nominal) +
           parseInt(checkId[0].user_balance);
-
         await updateBalance(newBalance, user_id);
 
         const formatBalance = helper.formatN(newBalance)

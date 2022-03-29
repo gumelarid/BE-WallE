@@ -37,6 +37,7 @@ module.exports = {
                     return helper.response(response, 403, `Sorry, your account balance is not sufficient for this transaction. Your account balance is Rp ${formatBalance}`)
 
                 } else {
+
                     let setData = {
                         transfer_id: uuid(),
                         user_id_a,
@@ -46,6 +47,7 @@ module.exports = {
                         transfer_amount,
                         transfer_created_at: new Date(),
                     }
+
                     const post1 = await postTransfer(setData)
                     const calBalanceA = parseInt(checkUserA[0].user_balance) - parseInt(transfer_amount)
 
@@ -151,7 +153,12 @@ module.exports = {
             for (let i = 0; i < dailyIncome.length; i++) {
                 dailyIncome[i].day = new Intl.DateTimeFormat('en-US', options).format(dailyIncome[i].date)
             }
-            const result = { weekExpense, weekIncome, dailyExpense, dailyIncome }
+            const result = {
+                weekExpense,
+                weekIncome,
+                dailyExpense,
+                dailyIncome
+            }
             helper.response(response, 200, `Success get balance statistic by user ID ${id}`, result)
         } catch (e) {
             return helper.response(response, 400, 'Bad Request')
