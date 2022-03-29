@@ -409,6 +409,7 @@ module.exports = {
         try {
             const { user_email, user_password, user_first_name, user_last_name, user_phone } = request.body;
             const userInDatabase = await isUserExist(user_email);
+            console.log(userInDatabase)
             if (userInDatabase.length > 0) {
                 return helper.response(
                     response,
