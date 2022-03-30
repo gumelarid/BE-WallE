@@ -24,8 +24,8 @@ app.use("/", routerNavigation);
 app.get("*", (request, response) => {
     response.status(404).send("Path not Found");
 });
-app.listen(process.env.PORT, process.env.IP, () => {
+app.listen(process.env.PORT || 5000, process.env.IP, () => {
     console.log(
-        `Express app is listening on host: ${process.env.IP} and port: ${process.env.PORT}`
+        `Express app is listening on host: ${process.env.IP} and port: ${process.env.PORT || 5000}`
     )
 })
